@@ -26,18 +26,20 @@
 #include <SPI.h>
 #include <MFRC522.h>
 
-#define RST_PIN   9     // Configurable, see typical pin layout above
-#define SS_PIN    10    // Configurable, see typical pin layout above
+#define RST_PIN         D1          // Configurable, see typical pin layout above
+#define SS_PIN          D0          // Configurable, see typical pin layout above
 
 MFRC522 mfrc522(SS_PIN, RST_PIN);   // Create MFRC522 instance
 
 /* Set your new UID here! */
-#define NEW_UID {0xDE, 0xAD, 0xBE, 0xEF}
+//EA 6F DF 7B 21 88 04 00 C1 85 14 98 61 10 48 12
+#define NEW_UID {0xEA, 0x6F, 0xDF, 0x7B}
+#define BLOCK_0_DATA1 {0xEA, 0x6F, 0xDF, 0x7B, 0x21, 0x88, 0x04, 0x00, 0xC1, 0x85, 0x14, 0x98, 0x61, 0x10, 0x48, 0x12}
 
 MFRC522::MIFARE_Key key;
 
 void setup() {
-  Serial.begin(9600);  // Initialize serial communications with the PC
+  Serial.begin(115200);  // Initialize serial communications with the PC
   while (!Serial);     // Do nothing if no serial port is opened (added for Arduinos based on ATMEGA32U4)
   SPI.begin();         // Init SPI bus
   mfrc522.PCD_Init();  // Init MFRC522 card
@@ -77,7 +79,7 @@ void loop() {
   } 
   Serial.println();
 
-  // Dump PICC type
+// Dump PICC type
 //  MFRC522::PICC_Type piccType = mfrc522.PICC_GetType(mfrc522.uid.sak);
 //  Serial.print(F("PICC type: "));
 //  Serial.print(mfrc522.PICC_GetTypeName(piccType));
@@ -90,11 +92,15 @@ void loop() {
 //    Serial.println(F("This sample only works with MIFARE Classic cards."));
 //    return;
 //  }
-  
   // Set new UID
-  byte newUid[] = NEW_UID;
-  if ( mfrc522.MIFARE_SetUid(newUid, (byte)4, true) ) {
-    Serial.println(F("Wrote new UID to card."));
+  //byte newUid[] = NEW_UID;
+  //if ( mfrc522.MIFARE_SetUid(newUid, (byte)4, true) ) {
+    //Serial.println(F("Wrote new UID to card."));
+  //}
+  // Set new UID
+  byte block0Data[] = BLOCK_0_DATA1;
+  if ( mfrc522.MIFARE_SetBlock0(block0Data, true) ) {
+    Serial.println(F("Wrote new block 0 data to card."));
   }
   
   // Halt PICC and re-select it so DumpToSerial doesn't get confused
